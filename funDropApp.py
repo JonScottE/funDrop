@@ -25,12 +25,12 @@ def load_contract():
         contract_abi = json.load(f)  # loads our .json and saves as contract_abi
 
     # Set the contract address (this is the address of the deployed contract)
-    contract_address = os.getenv("SMART_CONTRACT_ADDRESS") # once deployed from remix, save the contract address to the .env file
+    contract_address = os.getenv("SMART_CONTRACT_ADDRESS") # once deployed from remix, save the contract address to 
 
     # Get the contract
     contract = w3.eth.contract(
         address=contract_address, # variable set above with .env file
-        abi=artwork_abi    # variable set above with .json
+        abi=contract_abi    # variable set above with .json
     )
 
     return contract
@@ -47,17 +47,17 @@ st.title("Start a funDrop!")
 
 st.write("Choose your wallet")
 accounts = w3.eth.accounts
-address = st.selectbox("Select your account for funds to go to.", options=accounts) # this should be reflecting the address of the payable owner???
+owner = st.selectbox("Select your account for funds to go to.", options=accounts) # this should be reflecting the address of the payable owner???
 st.markdown("---")
 
 cause = st.text_input("Enter the name of the Cause") #this was artwork_name
 
-donation_amount = st.number_input("How Much would you like to raise") #
+donation_amount = int(st.number_input("How Much would you like to raise", step=1)) #
 
-artwork_uri = st.text_input("The URI to the artwork")
+tokenURI = st.text_input("The URI to the artwork")
 
 if st.button("Let the funDrop begin!"):
-    tx_hash = contract.functions.CreateFundraiser(address, cause, donation_amount, donor_wallet, artwork_uri).transact({'from': address, 'gas': 1000000})
+    tx_hash = contract.functions.CreateFundraiser(cause, owner, donation_amount, tokenURI).transact({'from': owner, 'gas': 1000000}) #donor_wallet,removed but hashed out in case
     receipt = w3.eth.waitForTransactionReceipt(tx_hash)
     st.write("Transaction receipt mined:")
     st.write(dict(receipt))
@@ -66,7 +66,7 @@ st.markdown("---")
 ################################################################################
 # Display a Token
 ################################################################################
-st.markdown("## Display an Art Token")
+st.markdown("## Display Receipt")
 selected_address = st.selectbox("Select Account", options=accounts)
 tokens = contract.functions.balanceOf(selected_address).call()
 st.write(f"This address owns {tokens} tokens")
