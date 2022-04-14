@@ -5,6 +5,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 import streamlit as st
 
+
 load_dotenv()
 
 # Define and connect a new Web3 provider
@@ -47,14 +48,14 @@ st.title("Start a funDrop!")
 
 st.write("Choose your wallet")
 accounts = w3.eth.accounts
-owner = st.selectbox("Select your account for funds to go to.", options=accounts) # this should be reflecting the address of the payable owner???
+owner = st.selectbox("Select your account for funds to go to.", options=accounts) # this should be reflecting the address of the payable owner
 st.markdown("---")
 
-cause = st.text_input("Enter the name of the Cause") #this was artwork_name
+cause = st.text_input("Enter the name of the Cause") 
 
-donation_amount = int(st.number_input("How Much would you like to raise", step=1)) #
+donation_amount = int(st.number_input("How Much would you like to raise", step=1)) 
 
-tokenURI = st.text_input("The URI to the artwork")
+tokenURI = st.text_input("Enter Cause ID") #shit hack here, should be getting it from the contract, should this just read tokenURI = tokenURI???
 
 if st.button("Let the funDrop begin!"):
     tx_hash = contract.functions.CreateFundraiser(cause, owner, donation_amount, tokenURI).transact({'from': owner, 'gas': 1000000}) #donor_wallet,removed but hashed out in case
@@ -64,19 +65,22 @@ if st.button("Let the funDrop begin!"):
 st.markdown("---")
 
 ################################################################################
-# Display a Token
+# Make a donation
 ################################################################################
-st.markdown("## Display Receipt")
-selected_address = st.selectbox("Select Account", options=accounts)
-tokens = contract.functions.balanceOf(selected_address).call()
-st.write(f"This address owns {tokens} tokens")
-token_id = st.selectbox("Artwork Tokens", list(range(tokens)))
-if st.button("Display"):
-    # Get the art token owner
-    owner = contract.functions.ownerOf(token_id).call()
-    st.write(f"The token is registered to {owner}")
+st.markdown("## Make a donation")
+st.selectbox("Find your cause", options={cause})
 
-    # Get the art token's URI
-    token_uri = contract.functions.tokenURI(token_id).call()
-    st.write(f"The tokenURI is {token_uri}")
-    st.image(token_uri)
+st.write(f"The donation amount is {donation_amount}.")
+
+# sender = msg.sender
+sender = st.selectbox("Select your account to donate funds from.", options=accounts)
+if st.button("Donate"): # just want this to take from sender and give to original owner
+    # Make the Donation
+    
+    Donate = contract.functions.donate(owner).transact({'from':sender, 'gas':1000000})
+    receipt = w3.eth.waitForTransactionReceipt(Donate)
+    st.write("Thank you for your donation.")
+    #st.image
+    
+
+   
